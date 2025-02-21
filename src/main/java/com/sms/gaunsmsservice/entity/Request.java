@@ -3,6 +3,8 @@ package com.sms.gaunsmsservice.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "request")
 @Data
@@ -17,7 +19,8 @@ public class Request {
     @ElementCollection
     @Column(name = "gsm")
     private String[] gsm;
-
+    @Column(name = "message_date")
+    private LocalDateTime messageDate;
     public Long getId() {
         return id;
     }
@@ -48,5 +51,13 @@ public class Request {
 
     public void setGsm(String[] gsm) {
         this.gsm = gsm;
+    }
+
+    public LocalDateTime getMessageDate() {
+        return messageDate;
+    }
+
+    public void setMessageDate(LocalDateTime messageDate) {
+        this.messageDate = messageDate;
     }
 }

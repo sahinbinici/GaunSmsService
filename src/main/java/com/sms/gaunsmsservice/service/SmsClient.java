@@ -12,6 +12,9 @@ import java.util.Map;
 
 public class SmsClient {
 
+    public static Integer responseCode=null;
+    public static String responseMessage=null;
+
     public static HttpURLConnection sendSms(RequestDto requestDto) {
 
         try {
@@ -26,7 +29,8 @@ public class SmsClient {
                 byte[] input = jsonInputString.getBytes("utf-8");
                 os.write(input, 0, input.length);
             }
-
+            responseCode = conn.getResponseCode();
+            responseMessage = conn.getResponseMessage();
             System.out.println("Response Code: " + conn.getResponseCode());
             System.out.println("Response Message: " + conn.getResponseMessage());
             return  conn;
