@@ -18,7 +18,25 @@ public class SecurityConfig {
             .csrf().disable() // CSRF protection is disabled (generally unnecessary for APIs)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/**").authenticated() // All requests under /api/ require authentication
-                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**").permitAll() // Allow access to Swagger UI and API docs
+                .requestMatchers(
+                    "/v3/api-docs",
+                    "/v3/api-docs/**",
+                    "/v3/api-docs.yaml",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/swagger-resources",
+                    "/swagger-resources/**",
+                    "/configuration/ui",
+                    "/configuration/security",
+                    "/webjars/**",
+                    "/*.html",
+                    "/favicon.ico",
+                    "/**/*.html",
+                    "/**/*.css",
+                    "/**/*.js",
+                    "/static/**"
+                ).permitAll() // Allow access to Swagger UI and API docs
+                .anyRequest().authenticated() // Any other request requires authentication
             )
             .httpBasic(); // Using Basic Authentication without parameters
         return http.build();

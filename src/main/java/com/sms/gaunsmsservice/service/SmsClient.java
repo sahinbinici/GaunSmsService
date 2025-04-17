@@ -44,7 +44,7 @@ public class SmsClient {
         Map<String, Object> params = new HashMap<>();
         params.put("api_id", "29d463733f56db81be9eb355");
         params.put("api_key", "79259ea325e14e8603ab7cf7");
-        params.put("sender", "SMS TEST");
+        params.put("sender", "G.ANTEP UNI");
         params.put("message_type", "normal");
         params.put("message", requestDto.getMsg());
         params.put("message_content_type", "bilgi");
