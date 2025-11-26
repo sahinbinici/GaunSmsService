@@ -1,57 +1,103 @@
 package com.sms.gaunsmsservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sms.gaunsmsservice.dto.RequestDto;
+import com.sms.gaunsmsservice.dto.SmsApiResponse;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+@Component
 public class SmsClient {
 
-    public static Integer responseCode=null;
-    public static String responseMessage=null;
+    @Value("${sms.api.url}")
+    private String apiUrl;
+    
+    @Value("${sms.api.id}")
+    private String apiId;
+    
+    @Value("${sms.api.key}")
+    private String apiKey;
+    
+    @Value("${sms.api.sender}")
+    private String sender;
+    
+    @Value("${sms.api.message.type}")
+    private String messageType;
+    
+    @Value("${sms.api.message.content.type}")
+    private String messageContentType;
 
-    public static HttpURLConnection sendSms(RequestDto requestDto) {
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
+    public SmsApiResponse sendSms(RequestDto requestDto) {
         try {
-            URL url = new URL("https://api.vatansms.net/api/v1/1toN");
+            URL url = new URL(apiUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoOutput(true);
 
-            String jsonInputString = getString(requestDto);
+            String jsonInputString = buildRequestJson(requestDto);
+            
             try(OutputStream os = conn.getOutputStream()) {
                 byte[] input = jsonInputString.getBytes("utf-8");
                 os.write(input, 0, input.length);
             }
-            responseCode = conn.getResponseCode();
-            responseMessage = conn.getResponseMessage();
-            System.out.println("Response Code: " + conn.getResponseCode());
-            System.out.println("Response Message: " + conn.getResponseMessage());
-            return  conn;
+
+            int responseCode = conn.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+
+            // Parse response
+            BufferedReader br;
+            if (responseCode >= 200 && responseCode < 300) {
+                br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"));
+            } else {
+                br = new BufferedReader(new InputStreamReader(conn.getErrorStream(), "utf-8"));
+            }
+
+            StringBuilder response = new StringBuilder();
+            String responseLine;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+            br.close();
+
+            String responseBody = response.toString();
+            System.out.println("Response Body: " + responseBody);
+
+            // Parse JSON response
+            SmsApiResponse apiResponse = objectMapper.readValue(responseBody, SmsApiResponse.class);
+            return apiResponse;
+
         } catch(Exception e) {
             e.printStackTrace();
+            // Return error response
+            SmsApiResponse errorResponse = new SmsApiResponse();
+            errorResponse.setStatus("error");
+            errorResponse.setDescription("SMS gönderimi sırasında hata oluştu: " + e.getMessage());
+            errorResponse.setId(null);
+            return errorResponse;
         }
-        return null;
     }
 
-    private static String getString(RequestDto requestDto) throws JsonProcessingException {
+    private String buildRequestJson(RequestDto requestDto) throws Exception {
         Map<String, Object> params = new HashMap<>();
-        params.put("api_id", "29d463733f56db81be9eb355");
-        params.put("api_key", "79259ea325e14e8603ab7cf7");
-        params.put("sender", "G.ANTEP UNI");
-        params.put("message_type", "normal");
+        params.put("api_id", apiId);
+        params.put("api_key", apiKey);
+        params.put("sender", sender);
+        params.put("message_type", messageType);
         params.put("message", requestDto.getMsg());
-        params.put("message_content_type", "bilgi");
+        params.put("message_content_type", messageContentType);
         params.put("phones", requestDto.getGsm());
 
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonInputString = mapper.writeValueAsString(params);
-        return jsonInputString;
+        return objectMapper.writeValueAsString(params);
     }
 }

@@ -4,15 +4,13 @@ import com.sms.gaunsmsservice.dto.RequestDto;
 import com.sms.gaunsmsservice.dto.ResponseDto;
 import com.sms.gaunsmsservice.service.SmsService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(originPatterns = "*", allowedHeaders = "*")
 public class SmsController {
 
     private final SmsService smsService;

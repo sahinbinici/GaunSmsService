@@ -16,7 +16,7 @@ public class Response {
     private String messageID;
     @Column(name = "status")
     private boolean status;
-    @Column(name = "statusDescription")
+    @Column(name = "statusDescription", length = 500)
     private String statusDesc;
     @Column(name = "response_date")
     private LocalDateTime responseDate;

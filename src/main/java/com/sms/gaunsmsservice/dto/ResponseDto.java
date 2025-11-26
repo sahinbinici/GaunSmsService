@@ -8,16 +8,16 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ResponseDto {
-    private String messageID;
+    private String msgID;
     private boolean status;
     private String statusDesc;
 
-    public String getMessageID() {
-        return messageID;
+    public String getMsgID() {
+        return msgID;
     }
 
-    public void setMessageID(String messageID) {
-        this.messageID = messageID;
+    public void setMsgID(String msgID) {
+        this.msgID = msgID;
     }
 
     public boolean isStatus() {

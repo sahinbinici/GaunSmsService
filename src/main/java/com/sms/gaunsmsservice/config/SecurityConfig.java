@@ -4,18 +4,27 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final CorsConfigurationSource corsConfigurationSource;
+
+    public SecurityConfig(CorsConfigurationSource corsConfigurationSource) {
+        this.corsConfigurationSource = corsConfigurationSource;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf().disable() // CSRF protection is disabled (generally unnecessary for APIs)
+            .cors(cors -> cors.configurationSource(corsConfigurationSource)) // Enable CORS with custom configuration
+            .csrf(AbstractHttpConfigurer::disable) // CSRF protection is disabled
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/**").authenticated() // All requests under /api/ require authentication
                 .requestMatchers(
@@ -31,14 +40,11 @@ public class SecurityConfig {
                     "/webjars/**",
                     "/*.html",
                     "/favicon.ico",
-                    "/**/*.html",
-                    "/**/*.css",
-                    "/**/*.js",
                     "/static/**"
                 ).permitAll() // Allow access to Swagger UI and API docs
                 .anyRequest().authenticated() // Any other request requires authentication
             )
-            .httpBasic(); // Using Basic Authentication without parameters
+            .httpBasic(httpBasic -> {}); // Using Basic Authentication
         return http.build();
     }
 
