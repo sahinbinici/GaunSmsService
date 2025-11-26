@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  gaunsms-db:
+    image: mariadb:11.2
+    container_name: gaunsms-mariadb
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: sahinbey_
+      MYSQL_DATABASE: gaunsms
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
+    volumes:
+      - gaunsms-db-data:/var/lib/mysql
+    networks:
+      - gaunsms-network
+    ports:
+      - "3307:3306"  # Dış port 3307, iç port 3306 (çakışma olmaması için)
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  gaunsms-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gaunsms-service
+    restart: unless-stopped
+    ports:
+      - "8082:8080"  # Dış port 8082, iç port 8080 (8080 ve 8081 zaten kullanımda)
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://gaunsms-db:3306/gaunsms
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: sahinbey_
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      gaunsms-db:
+        condition: service_healthy
+    networks:
+      - gaunsms-network
+
+networks:
+  gaunsms-network:
+    driver: bridge
+
+volumes:
+  gaunsms-db-data:
+    driver: local
